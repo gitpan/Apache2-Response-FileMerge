@@ -30,7 +30,7 @@ use constant {
 };
 
 BEGIN {
-    our $VERSION = join( '.', 0, ( '$Revision: 27 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 0, ( '$Revision: 29 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
@@ -268,7 +268,7 @@ __END__
 
 =head1 NAME
 
-Apache2::Response::FileMerge - Merge and include static files into a single file
+Apache2::Response::FileMerge - Merge and include static client-side style and code 
 
 =head1 SYNOPSIS
 
@@ -287,9 +287,7 @@ for high-performance sites along with sites that are less strained but are still
 trying to conserve the resources they have.  The basis of this module will contribute
 to the resolution of three of these points and one that is not documented there.
 
-=over
-
-=item File Merging
+=head2 File Merging
 
 A common problem with the standard development of sites is the number of <script/>,
 <style/> and other static file includes that may/must be made in a single page.
@@ -299,12 +297,12 @@ into a single site.  Look to 'URI PROTOCOL' to see how this module will let you
 programaticlly merge multiple files into a single file, allowing you to drop from
 'n' <s(?:cript|style)> tags to a single file (per respective type).
 
-=item File Minimization
+=head2 File Minimization
 
 A feature that can be administered programatically (see ATTRIBUTES), will minimize
 whitespace usage for all CSS/Javascript files that leave the server.
 
-=item File Compression
+=head2 File Compression
 
 A feature that can be administered programatically (see ATTRIBUTES), will gzip 
 the content before leaving the server.  Now, I can't ever imagine the need to
@@ -312,7 +310,7 @@ apply compression to a style or script file without wanting to apply it to /all/
 content.  That said, I recommend the use of mod_gzip (L<http://sourceforge.net/projects/mod-gzip/>) 
 rather than this attribute.  Still, I wanted to implement it, so I did.
 
-=item C-Style Inlcudes
+=head2 C-Style Inlcudes
 
 Merging files through a URI protocol is useful, however if you have a large-scale
 application written in javascript, you quickly introduce namespacing, class
@@ -342,13 +340,9 @@ Where, with that example, the file 'foo.js' will be a physical replacement
 of the include statement and therefore will no longer need to be added to 
 the URI.
 
-=back
-
 =head1 ATTRIBUTES
 
-=over
-
-=item cache
+=head2 cache
 
     Apache2::Response::FileMerge->cache();
 
@@ -365,7 +359,7 @@ enabled, any changes to the underlying files will also require
 a reload/graceful of the server to pick up the changes and discontinue
 the 304 return for the particular URI.
 
-=item stats
+=head2 stats
 
     Apache2::Response::FileMerge->stats();
 
@@ -381,20 +375,18 @@ at the top of the document.  Something like the following can be expected:
           Render: 0.0628039836883545
     */
 
-=item minimize
+=head2 minimize
     
     Apache2::Response::FileMerge->minimize();
 
 Will use <JavaScript::Minifier> to minimize the Javascript and
 L<CSS::Minifier> to minimize CSS, if installed.
 
-=item compress 
+=head2 compress 
 
     Apache2::Response::FileMerge->compress();
 
 Will use <Compress::Zlib> to compress the document, if installed.
-
-=back
 
 =head1 EXAMPLES
 
@@ -475,6 +467,38 @@ is demand for 1.x, I will take the time to dynamically figure out
 what the right moduels, API, etc to use will be.  For now, being that
 /I/ only use mod_perl 2.x, I have decided to not be overly clumsy 
 with the code to take into consideration a platform people may not use.
+
+=item CPAN Testers
+
+Upon it's first release, I noticed most of the automated CPAN testers
+do /not/ have L<Apache::Test> installed on their systems and therefore
+find the tests all fail.  I have decided not to make L<Apache::Test>,
+L<Apache::TestMM> (and most other files) dependancies of this module
+as they are all automatically installed by mod_perl2, which is a requirement
+of this module (and will/shold be installed independantly).  Therefore,
+I would recommend to completely ignore the automated tests and download/test
+on your system independantly.  
+
+Some status descriptions that I've found:
+
+=over
+
+=item PASS
+
+Uh... it passed.
+
+=item UNKNOWN
+
+Finding the L<Apache::Test> framework isn't installed at all and therefore
+failing on the Makefile inclusion of L<Apache::TestMM>.
+
+=item FAIL
+
+Finding this runs the tests against the mod_perl v1(?:\.x)+ framework and
+fails all over the place.  As mentioned earlier, I don't care (but will
+if people complain enough).
+
+=back
 
 =item CPAN shell installation
 

@@ -15,6 +15,7 @@ t/08-js_minimize.t
 t/09-css_minimize.t
 t/10-cache.t
 t/11-compress.t
+t/12-mp2.t
 t/conf/extra.conf.in
 t/conf/extra.last.conf.in
 t/htdocs/cache/cache.js

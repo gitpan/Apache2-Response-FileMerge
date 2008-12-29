@@ -1,4 +1,8 @@
 ------------------------------------------------------------------------
+r29 | trevor | 2008-12-29 08:17:29 -0800 (Mon, 29 Dec 2008) | 1 line
+
+Adding new mp2 specific tests and POD regarding failing tests
+------------------------------------------------------------------------
 r27 | trevor | 2008-12-23 09:03:27 -0800 (Tue, 23 Dec 2008) | 1 line
 
 Initial CPAN release
