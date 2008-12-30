@@ -61,5 +61,12 @@
     PerlSetVar compress 1
     PerlResponseHandler Apache2::Response::FileMerge
   </LocationMatch>
+
+  <LocationMatch "sep/.*\.(?:js|css)$">
+    SetHandler perl-script 
+    PerlSetVar stats 1
+    PerlSetVar file_separator - 
+    PerlResponseHandler Apache2::Response::FileMerge
+  </LocationMatch>
 </IfDefine>
 

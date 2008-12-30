@@ -1,4 +1,8 @@
 ------------------------------------------------------------------------
+r31 | trevor | 2008-12-30 12:48:19 -0800 (Tue, 30 Dec 2008) | 1 line
+
+Adding file_separator attribute to change the file separator protocol
+------------------------------------------------------------------------
 r29 | trevor | 2008-12-29 08:17:29 -0800 (Mon, 29 Dec 2008) | 1 line
 
 Adding new mp2 specific tests and POD regarding failing tests

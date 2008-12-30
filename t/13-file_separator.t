@@ -7,7 +7,7 @@ use Apache::TestRequest;
 use Apache::TestUtil;
 
 plan tests => 4, \&need_lwp;
-my $r = GET('/js/foo~foo.bar.js');
+my $r = GET('/sep/foo-foo.bar.js');
 
 ok( $r->code() == 200 );
 ok( $r->content() =~ /foo/sm  );

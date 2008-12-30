@@ -16,6 +16,7 @@ t/09-css_minimize.t
 t/10-cache.t
 t/11-compress.t
 t/12-mp2.t
+t/13-file_separator.t
 t/conf/extra.conf.in
 t/conf/extra.last.conf.in
 t/htdocs/cache/cache.js
@@ -30,6 +31,8 @@ t/htdocs/js/foo/bar.js
 t/htdocs/js/foo.js
 t/htdocs/minimize/minimize.css
 t/htdocs/minimize/minimize.js
+t/htdocs/sep/foo/bar.js
+t/htdocs/sep/foo.js
 t/htdocs/stats/stats.js
 t/htdocs/verify.js
 t/TEST

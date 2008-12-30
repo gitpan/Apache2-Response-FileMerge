@@ -23,6 +23,7 @@ use constant {
        Cache: %s
    Minify JS: %s
   Minify CSS: %s
+   Separator: %s
     Compress: %s
       Render: %s
 */
@@ -30,7 +31,7 @@ use constant {
 };
 
 BEGIN {
-    our $VERSION = join( '.', 0, ( '$Revision: 29 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 0, ( '$Revision: 31 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
@@ -40,6 +41,7 @@ my $DO_MIN_CSS      = 0;
 my $DO_MODIFIED     = 0;
 my $DO_COMPRESS     = 0;
 my $DO_STATS        = 0;
+my $SEPARATOR       = '~';
 my %CONTENT_TYPES   = ( 'js'=> 'text/javascript', 'css' => 'text/css', );
 my %NUMERICAL_MONTH = map{ $_ => $i++ } qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
 my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
@@ -56,7 +58,13 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
 
         # Undocumented as it's not the most efficient way of doing
         # things, but still here if/when needed (ie. unit tests)
-        __PACKAGE__->$_() for ( grep{ $r->dir_config->get($_) } @{ DIR_ACTIONS() } );
+        __PACKAGE__->$_(
+            $r->dir_config->get($_)
+        ) for (
+            grep{
+                $r->dir_config->get($_)
+            } @{ DIR_ACTIONS() }
+        );
 
         if ( $DO_MODIFIED ) {
             if ( my $modified = $r->headers_in()->{MODIFIED_SINCE()} ) {
@@ -81,7 +89,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
         ( $location, $file, $type ) = $uri =~ /^(.*)\/(.*)\.(js|css)$/;
         my $root                    = $r->document_root();
 
-        foreach my $input ( split( '-', $file ) ) {
+        foreach my $input ( split( $SEPARATOR, $file ) ) {
             $input     =~ s/\./\//g;
             $content  .= ( _load_content( $root, $location, $input, $type ) || '' );
         }
@@ -100,6 +108,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             $DO_MODIFIED,
             $DO_MIN_JS,
             $DO_MIN_CSS,
+            $SEPARATOR,
             $DO_COMPRESS,
             $delta,
             $content
@@ -176,6 +185,10 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             return _sf_unescape($content);
         }
     }
+}
+
+sub file_separator {
+    return $SEPARATOR = pop;
 }
 
 sub cache {
@@ -388,6 +401,11 @@ L<CSS::Minifier> to minimize CSS, if installed.
 
 Will use <Compress::Zlib> to compress the document, if installed.
 
+=head2 file_separator
+
+Will change the default file separator from '~' to any character you choose.
+The default is '~' as defined in the URI PROTOCOL section.
+
 =head1 EXAMPLES
 
 =head2 httpd.conf
@@ -436,7 +454,7 @@ DocumentRoot.
 
 '.' implies directory traversal.
 
-'-' implies file seperation.
+'~' implies file separation (Default, see ATTRIBUTES).
 
     # File foo/bar.js will be loaded, which is in the '/js/' directory
     http://...com/js/foo.bar.js
