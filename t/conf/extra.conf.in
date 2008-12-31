@@ -68,5 +68,6 @@
     PerlSetVar file_separator - 
     PerlResponseHandler Apache2::Response::FileMerge
   </LocationMatch>
+
 </IfDefine>
 

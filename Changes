@@ -1,4 +1,8 @@
 ------------------------------------------------------------------------
+r33 | trevor | 2008-12-30 20:45:30 -0800 (Tue, 30 Dec 2008) | 1 line
+
+Bug fixes and addition of document_root attribute
+------------------------------------------------------------------------
 r31 | trevor | 2008-12-30 12:48:19 -0800 (Tue, 30 Dec 2008) | 1 line
 
 Adding file_separator attribute to change the file separator protocol

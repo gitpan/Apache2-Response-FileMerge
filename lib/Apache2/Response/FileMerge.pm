@@ -15,7 +15,7 @@ use constant {
     LAST_MODIFIED         => 'Last-Modified',
     MODIFIED_SINCE        => 'If-Modified-Since',
     LAST_MODIFIED_PATTERN => '%a, %b %e %Y %H:%M:%S PST',
-    DIR_ACTIONS           => [ qw( minimize cache compress stats ) ],
+    DIR_ACTIONS           => [ qw( minimize cache compress stats document_root file_seperator ) ],
     STATS_PATTERN         => '
 /*
          URI: %s
@@ -23,6 +23,7 @@ use constant {
        Cache: %s
    Minify JS: %s
   Minify CSS: %s
+   Doc. Root: %s
    Separator: %s
     Compress: %s
       Render: %s
@@ -31,7 +32,7 @@ use constant {
 };
 
 BEGIN {
-    our $VERSION = join( '.', 0, ( '$Revision: 31 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 0, ( '$Revision: 33 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
@@ -42,6 +43,7 @@ my $DO_MODIFIED     = 0;
 my $DO_COMPRESS     = 0;
 my $DO_STATS        = 0;
 my $SEPARATOR       = '~';
+my $DOC_ROOT        = '';
 my %CONTENT_TYPES   = ( 'js'=> 'text/javascript', 'css' => 'text/css', );
 my %NUMERICAL_MONTH = map{ $_ => $i++ } qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
 my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
@@ -50,7 +52,6 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
     my %cache;
     my $mtime = 0;
     sub handler {
-        my $start = _time();
         _init();
         my ($r) = @_;
         $LOG    = $r->log();
@@ -65,6 +66,8 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
                 $r->dir_config->get($_)
             } @{ DIR_ACTIONS() }
         );
+
+        my $start = _time();
 
         if ( $DO_MODIFIED ) {
             if ( my $modified = $r->headers_in()->{MODIFIED_SINCE()} ) {
@@ -87,7 +90,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
 
         my ( $location, $file );
         ( $location, $file, $type ) = $uri =~ /^(.*)\/(.*)\.(js|css)$/;
-        my $root                    = $r->document_root();
+        my $root                    = $DOC_ROOT || $r->document_root();
 
         foreach my $input ( split( $SEPARATOR, $file ) ) {
             $input     =~ s/\./\//g;
@@ -100,6 +103,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             no strict 'refs';
             $content  = &{ "_minimize_$type" }( 'input' => $content ) if ( $DO_MIN_JS || $DO_MIN_CSS );
         }
+
         my $delta = _time() - $start;
         $content  = sprintf(
             STATS_PATTERN,
@@ -108,6 +112,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             $DO_MODIFIED,
             $DO_MIN_JS,
             $DO_MIN_CSS,
+            $DOC_ROOT,
             $SEPARATOR,
             $DO_COMPRESS,
             $delta,
@@ -154,7 +159,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             my $content      =  '';
 
             if ( exists( $loaded{$cname} ) ) {
-                $LOG->warn("Attempting to include \"$file_name\" more than once");
+                $LOG->debug("Attempting to include \"$file_name\" more than once");
                 return;
             }
             else {
@@ -175,16 +180,20 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             }
 
             $content = _sf_escape($content);
-            while ( $content =~ /(\/\\\*\\\*\s*[Ii]nc(?:lude)\s*([\w\.\/]+)\s*\\\*\\\*\/)/sgm ) {
+            while ( $content =~ /(\/\\\*\\\*\s*[Ii]nc(?:lude)\s*([-\w\.\/]+)\s*\\\*\\\*\/)/sgm ) {
                 my ( $matcher, $file )      =  ( $1, $2 );
                 my ( $inc_file, $inc_type ) =  $file =~ /^(.*?)\.(js|css)$/;
                 my $new_file_content        =  _load_content( $root, '', $inc_file, $inc_type ) || '';
-                $content                    =~ s/\/\\\*\\\*\s*[Ii]nc(?:lude)\s*[\w\.\/]+\s*\\\*\\\*\//$new_file_content/sm;
+                $content                    =~ s/\/\\\*\\\*\s*[Ii]nc(?:lude)\s*[-\w\.\/]+\s*\\\*\\\*\//$new_file_content/sm;
             }
 
             return _sf_unescape($content);
         }
     }
+}
+
+sub document_root {
+    return $DOC_ROOT = pop;
 }
 
 sub file_separator {
@@ -403,8 +412,20 @@ Will use <Compress::Zlib> to compress the document, if installed.
 
 =head2 file_separator
 
+    # Will change the separator from '~' to '-'
+    Apache2::Response::FileMerge->file_separator('-');
+
 Will change the default file separator from '~' to any character you choose.
 The default is '~' as defined in the URI PROTOCOL section.
+
+=head2 document_root
+    
+    Apache2::Response::FileMerge->document_root('/var/www/custom-docroot');
+
+Will change the module's relative document root from the servers default
+and defined root to that of any string passed to the attribute.
+
+Will overload
 
 =head1 EXAMPLES
 
