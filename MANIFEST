@@ -14,10 +14,11 @@ t/07-stats.t
 t/08-js_minimize.t
 t/09-css_minimize.t
 t/10-cache.t
-t/11-compress.t
 t/12-mp2.t
 t/13-file_separator.t
 t/14-document_root.t
+t/15-append_inc_name.t
+t/99-compress.t
 t/conf/extra.conf.in
 t/conf/extra.last.conf.in
 t/htdocs/cache/cache.js
@@ -26,6 +27,7 @@ t/htdocs/css/bar/baz.css
 t/htdocs/css/bar.css
 t/htdocs/css/foo/bar.css
 t/htdocs/css/foo.css
+t/htdocs/inc/inc.js
 t/htdocs/js/bar/baz.js
 t/htdocs/js/bar.js
 t/htdocs/js/foo/bar.js

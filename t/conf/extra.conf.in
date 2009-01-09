@@ -69,5 +69,12 @@
     PerlResponseHandler Apache2::Response::FileMerge
   </LocationMatch>
 
+  <LocationMatch "inc/.*\.(?:js|css)$">
+    SetHandler perl-script 
+    PerlSetVar stats 1
+    PerlSetVar append_inc_name 1 
+    PerlResponseHandler Apache2::Response::FileMerge
+  </LocationMatch>
+
 </IfDefine>
 

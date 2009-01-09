@@ -12,10 +12,21 @@ use Apache2::RequestIO   ();
 use Apache2::Const       -compile => qw( OK HTTP_NOT_MODIFIED NOT_FOUND ); 
 
 use constant {
+
+    # http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
     LAST_MODIFIED         => 'Last-Modified',
     MODIFIED_SINCE        => 'If-Modified-Since',
     LAST_MODIFIED_PATTERN => '%a, %b %e %Y %H:%M:%S PST',
-    DIR_ACTIONS           => [ qw( minimize cache compress stats document_root file_seperator ) ],
+    COMMENT_PATTERN       => '/* %s */',
+
+    # Actions that can be manipulated from httpd.conf and mod_perl's
+    # PerlSetVar pragma
+    DIR_ACTIONS           => [ qw(
+        minimize        cache            compress          stats
+        document_root   file_seperator   append_inc_name  
+    ) ],
+
+    # What, in theory, the stats should look like when statistics are enabled
     STATS_PATTERN         => '
 /*
          URI: %s
@@ -23,16 +34,17 @@ use constant {
        Cache: %s
    Minify JS: %s
   Minify CSS: %s
-   Doc. Root: %s
    Separator: %s
     Compress: %s
+   Doc. Root: %s
+      Append: %s
       Render: %s
 */
 %s',
 };
 
 BEGIN {
-    our $VERSION = join( '.', 0, ( '$Revision: 33 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 0, ( '$Revision: 37 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
@@ -42,6 +54,7 @@ my $DO_MIN_CSS      = 0;
 my $DO_MODIFIED     = 0;
 my $DO_COMPRESS     = 0;
 my $DO_STATS        = 0;
+my $APPEND_INC_NAME = 0;
 my $SEPARATOR       = '~';
 my $DOC_ROOT        = '';
 my %CONTENT_TYPES   = ( 'js'=> 'text/javascript', 'css' => 'text/css', );
@@ -72,7 +85,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
         if ( $DO_MODIFIED ) {
             if ( my $modified = $r->headers_in()->{MODIFIED_SINCE()} ) {
                 # Sat, Dec 20 2008 4:48:03
-                my ( @time_parts, undef ) = split( /,?[\s:]/, $modified );
+                my ( @time_parts, undef ) = split( /,?[\s:]+/, $modified );
                 my @o = @time_parts;
                 $time_parts[0] = $NUMERICAL_DAY{$time_parts[0]};
                 $time_parts[1] = $NUMERICAL_MONTH{$time_parts[1]}; 
@@ -112,9 +125,10 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
             $DO_MODIFIED,
             $DO_MIN_JS,
             $DO_MIN_CSS,
-            $DOC_ROOT,
             $SEPARATOR,
             $DO_COMPRESS,
+            $DOC_ROOT,
+            $APPEND_INC_NAME,
             $delta,
             $content
         ) if ( $DO_STATS );
@@ -175,7 +189,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
                 close( $handle );
             }
             else {
-                $LOG->error("File not found: $file_name");
+                $LOG->error("File not found: \"$file_name");
                 return;
             }
 
@@ -184,12 +198,18 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
                 my ( $matcher, $file )      =  ( $1, $2 );
                 my ( $inc_file, $inc_type ) =  $file =~ /^(.*?)\.(js|css)$/;
                 my $new_file_content        =  _load_content( $root, '', $inc_file, $inc_type ) || '';
+                $new_file_content           = sprintf( COMMENT_PATTERN, "$root/$inc_file" ) 
+                                            . "\n\n$new_file_content" if ( $APPEND_INC_NAME ); 
                 $content                    =~ s/\/\\\*\\\*\s*[Ii]nc(?:lude)\s*[-\w\.\/]+\s*\\\*\\\*\//$new_file_content/sm;
             }
 
             return _sf_unescape($content);
         }
     }
+}
+
+sub append_inc_name {
+    return $APPEND_INC_NAME = pop;
 }
 
 sub document_root {
@@ -425,7 +445,21 @@ The default is '~' as defined in the URI PROTOCOL section.
 Will change the module's relative document root from the servers default
 and defined root to that of any string passed to the attribute.
 
-Will overload
+=head2 append_inc_name 
+
+Will append each inclucded file name, as a comment, into the included file.
+The intent is only to find a file that needs attention within the merged
+document with a little more ease.  A nice feature when developing swarths
+of JS/CSS code.
+
+Where, for example, if the handler merged 'foo/bar.js' and 'foo/bar/baz.js', 
+the output would look similar to the following (when enabled, default off):
+
+    /* foo/bar.js */
+    Foo.Bar = function(){}();
+
+    /* foo/bar/baz.js */
+    Foo.Bar.Baz = function(){}();
 
 =head1 EXAMPLES
 
