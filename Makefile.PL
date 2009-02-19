@@ -19,6 +19,7 @@ WriteMakefile(
   NAME          => 'Apache2-Response-FileMerge',
   VERSION_FROM  => 'lib/Apache2/Response/FileMerge.pm',
   PREREQ_PM     => {
+      'mod_perl2' => 0,
 #       'Apache::Test'             => 0,
 #       'CSS::Minifier::XS'        => 0, 
 #       'JavaScript::Minifier::XS' => 0,

@@ -44,7 +44,7 @@ use constant {
 };
 
 BEGIN {
-    our $VERSION = join( '.', 0, ( '$Revision: 37 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 1, map{ sprintf( '%03d', $_ - 59 ) } ( '$Revision: 60 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
@@ -540,38 +540,6 @@ is demand for 1.x, I will take the time to dynamically figure out
 what the right moduels, API, etc to use will be.  For now, being that
 /I/ only use mod_perl 2.x, I have decided to not be overly clumsy 
 with the code to take into consideration a platform people may not use.
-
-=item CPAN Testers
-
-Upon it's first release, I noticed most of the automated CPAN testers
-do /not/ have L<Apache::Test> installed on their systems and therefore
-find the tests all fail.  I have decided not to make L<Apache::Test>,
-L<Apache::TestMM> (and most other files) dependancies of this module
-as they are all automatically installed by mod_perl2, which is a requirement
-of this module (and will/shold be installed independantly).  Therefore,
-I would recommend to completely ignore the automated tests and download/test
-on your system independantly.  
-
-Some status descriptions that I've found:
-
-=over
-
-=item PASS
-
-Uh... it passed.
-
-=item UNKNOWN
-
-Finding the L<Apache::Test> framework isn't installed at all and therefore
-failing on the Makefile inclusion of L<Apache::TestMM>.
-
-=item FAIL
-
-Finding this runs the tests against the mod_perl v1(?:\.x)+ framework and
-fails all over the place.  As mentioned earlier, I don't care (but will
-if people complain enough).
-
-=back
 
 =item CPAN shell installation
 
