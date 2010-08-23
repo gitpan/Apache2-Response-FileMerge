@@ -3,7 +3,7 @@ package Apache2::Response::FileMerge;
 use strict;
 use warnings;
 
-use POSIX                qw( strftime mktime );
+use HTTP::Date;
 use APR::Table           ();
 use Apache2::RequestUtil ();
 use Apache2::Log         ();
@@ -44,10 +44,11 @@ use constant {
 };
 
 BEGIN {
-    our $VERSION = join( '.', 1, map{ sprintf( '%03d', $_ - 59 ) } ( '$Revision: 60 $' =~ /(\d+)/g ) );
+    our $VERSION = join( '.', 1, map{ sprintf( '%03d', $_ - 18 ) } ( '$Revision: 118 $' =~ /(\d+)/g ) );
 };
 
 my ( $i, $x )       = ( 0, 0 );
+my $ua              = undef;
 my $LOG             = undef;
 my $DO_MIN_JS       = 0;
 my $DO_MIN_CSS      = 0;
@@ -58,15 +59,13 @@ my $APPEND_INC_NAME = 0;
 my $SEPARATOR       = '~';
 my $DOC_ROOT        = '';
 my %CONTENT_TYPES   = ( 'js'=> 'text/javascript', 'css' => 'text/css', );
-my %NUMERICAL_MONTH = map{ $_ => $i++ } qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
-my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
 
 {
     my %cache;
     my $mtime = 0;
     sub handler {
-        _init();
         my ($r) = @_;
+        _init($r);
         $LOG    = $r->log();
         my $uri = $r->uri();
 
@@ -85,15 +84,10 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
         if ( $DO_MODIFIED ) {
             if ( my $modified = $r->headers_in()->{MODIFIED_SINCE()} ) {
                 # Sat, Dec 20 2008 4:48:03
-                my ( @time_parts, undef ) = split( /,?[\s:]+/, $modified );
-                my @o = @time_parts;
-                $time_parts[0] = $NUMERICAL_DAY{$time_parts[0]};
-                $time_parts[1] = $NUMERICAL_MONTH{$time_parts[1]}; 
-                $time_parts[3] -= 1900;
 
                 return Apache2::Const::HTTP_NOT_MODIFIED if (
                     $cache{$uri}{'mtime'}
-                    && $cache{$uri}{'mtime'} <= mktime( map{$time_parts[$_]}qw( 6 5 4 2 1 3 ) )
+                    && $cache{$uri}{'mtime'} <= str2time( $modified )
                 );
             }
         }
@@ -111,7 +105,7 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
         }
 
         my $has_content = ! ! $content;
-
+        
         {
             no strict 'refs';
             $content  = &{ "_minimize_$type" }( 'input' => $content ) if ( $DO_MIN_JS || $DO_MIN_CSS );
@@ -135,9 +129,9 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
 
         $r->content_type( $CONTENT_TYPES{$type} || 'text/plain' );
         my $headers                 = $r->headers_out();
-        $headers->{LAST_MODIFIED()} = strftime( LAST_MODIFIED_PATTERN, localtime( $mtime || 0 ) );
+        $headers->{LAST_MODIFIED()} = time2str($mtime);
         $cache{$uri}{'mtime'}       = $mtime;
-        
+
         if ( $DO_COMPRESS ) {
             $r->content_encoding('gzip');
             $content = _compress($content);
@@ -151,12 +145,19 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
 
     {
         my %loaded;
+        my %vars;
+
         sub _init {
-            %loaded = ();
+            my( $r ) = @_;
+
+            %loaded  = ();
+            %vars    = map { my( $k, $v ) = split(/=/); $k => ( $v || '' ) } split( /[&;]/, $r->args() );
         }
 
         sub _load_content {
             my ( $root, $location, $file_name, $type ) = @_;
+
+            _substitute_vars( \$location, \$file_name ) if ( %vars );
 
             $LOG->debug( "\$location = $location" );
             $location =~ s/\/$//g;
@@ -189,21 +190,31 @@ my %NUMERICAL_DAY   = map{ $_ => $x++ } qw(Mon Tue Wed Thu Fri Sat Sun);
                 close( $handle );
             }
             else {
-                $LOG->error("File not found: \"$file_name");
+                $LOG->error("File not found: \"$file_name\".");
                 return;
             }
 
             $content = _sf_escape($content);
-            while ( $content =~ /(\/\\\*\\\*\s*[Ii]nc(?:lude)\s*([-\w\.\/]+)\s*\\\*\\\*\/)/sgm ) {
+            while ( $content =~ /(\/\\\*\\\*\s*[Ii]nc(?:lude)\s*([-\{\}\w\.\/]+)\s*\\\*\\\*\/)/sgm ) {
                 my ( $matcher, $file )      =  ( $1, $2 );
                 my ( $inc_file, $inc_type ) =  $file =~ /^(.*?)\.(js|css)$/;
                 my $new_file_content        =  _load_content( $root, '', $inc_file, $inc_type ) || '';
                 $new_file_content           = sprintf( COMMENT_PATTERN, "$root/$inc_file" ) 
-                                            . "\n\n$new_file_content" if ( $APPEND_INC_NAME ); 
-                $content                    =~ s/\/\\\*\\\*\s*[Ii]nc(?:lude)\s*[-\w\.\/]+\s*\\\*\\\*\//$new_file_content/sm;
+                                                . "\n\n$new_file_content" if ( $APPEND_INC_NAME );
+                $content                    =~ s/\/\\\*\\\*\s*[Ii]nc(?:lude)\s*[-\{\}\w\.\/]+\s*\\\*\\\*\//$new_file_content/sm;
             }
 
             return _sf_unescape($content);
+        }
+
+        sub _substitute_vars {
+            foreach my $string ( @_ ) {
+                while( $$string =~ /\{\s*([\w-]+)\s*\}/g ) {
+                    my $varname = $1;
+                    next unless defined $vars{$varname};
+                    $$string =~ s/\{\s*$varname\s*\}/$vars{$varname}/g;
+                }
+            }
         }
     }
 }
@@ -523,6 +534,29 @@ DocumentRoot.
     # Will include foo.js and foo/bar.js respectively
     http://...com/foo-foo.bar.js
 
+=head2 File Name Variable Substitution
+
+File names, both in the url, and in the C-style includes, are subject
+to possible variable-substitution.  Any parameters in the url's query
+string will be checked as variables in file names.  All variables must
+be prefixed with "{" and suffixed with "}"; no spaces allowed (don't ask).
+For example: 
+
+    { var } // Doesn't work
+    [ var ] // Doesn't work
+    [var]   // Doesn't work
+    {var}   // Works!
+
+Further examples:
+
+    http://www.example.com/foo.bar~baz.qux.js?var=example
+
+    # Later, in foo/bar.js:
+    /** Include languages/{var}/foobar_text.js **/
+
+    # Resolves to:
+    /** Include languages/example/foobar_text.js **/
+
 =head1 URI PROTOCOL
 
 The generall usefulness of the advanced URI protocol is to combine 
@@ -571,13 +605,23 @@ mod_perl 2.x distribution.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Trevor Hall, E<lt>wazzuteke@cpan.orgE<gt>
+=item Trevor Hall, E<lt>wazzuteke@cpan.orgE<gt>
+
+Original author and maintainer.
+
+=item Romuald Brunet
+
+Generously submitted a patch adopting HTTP::Date to support
+POSIX locales and standard international date formats; particularly
+useful for file-modification based caching.
+
+=item Stephen Howard (L<http://search.cpan.org/~howars/>)
+
+Submitted concept and patches for file/dir name substituion. 
 
 =head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2009 by Trevor Hall
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

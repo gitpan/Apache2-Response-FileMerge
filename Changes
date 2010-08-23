@@ -1,27 +1,95 @@
 ------------------------------------------------------------------------
+r118 | trevor | 2010-08-23 08:45:57 -0700 (Mon, 23 Aug 2010) | 1 line
+
+none: Adjusting revision number
+------------------------------------------------------------------------
+r117 | trevor | 2010-08-23 08:45:24 -0700 (Mon, 23 Aug 2010) | 1 line
+
+none: Adjusting revision number
+------------------------------------------------------------------------
+r116 | trevor | 2010-08-20 10:54:37 -0700 (Fri, 20 Aug 2010) | 1 line
+
+none: Updating change set and manifest
+------------------------------------------------------------------------
+r115 | trevor | 2010-08-20 10:52:52 -0700 (Fri, 20 Aug 2010) | 1 line
+
+#150: Adding tests for file name var substitution
+------------------------------------------------------------------------
+r114 | trevor | 2010-08-20 10:51:42 -0700 (Fri, 20 Aug 2010) | 1 line
+
+#150: Adding file name variable substituion
+------------------------------------------------------------------------
+r113 | trevor | 2010-08-20 09:36:40 -0700 (Fri, 20 Aug 2010) | 1 line
+
+#149: Adding patch to support international dates in HTTP headers
+------------------------------------------------------------------------
+r109 | trevor | 2009-12-09 10:18:46 -0800 (Wed, 09 Dec 2009) | 1 line
+
+Adding support for Google Closure
+------------------------------------------------------------------------
+r108 | trevor | 2009-12-08 22:47:34 -0800 (Tue, 08 Dec 2009) | 1 line
+
+Adding support for google closure
+------------------------------------------------------------------------
+r61 | trevor | 2009-02-19 07:07:20 -0800 (Thu, 19 Feb 2009) | 1 line
+
+Updating change log
+------------------------------------------------------------------------
 r60 | trevor | 2009-02-19 07:06:31 -0800 (Thu, 19 Feb 2009) | 1 line
 
 Upgrading to v1
+------------------------------------------------------------------------
+r40 | trevor | 2009-01-09 09:13:22 -0800 (Fri, 09 Jan 2009) | 1 line
+
+Updating changes and manifiest
+------------------------------------------------------------------------
+r39 | trevor | 2009-01-09 09:11:56 -0800 (Fri, 09 Jan 2009) | 1 line
+
+Updating unit test bug when compression is enabled
+------------------------------------------------------------------------
+r38 | trevor | 2009-01-09 09:03:28 -0800 (Fri, 09 Jan 2009) | 1 line
+
+Updating changes and manifiest
 ------------------------------------------------------------------------
 r37 | trevor | 2009-01-09 09:02:54 -0800 (Fri, 09 Jan 2009) | 1 line
 
 Updating caching for single-digit days
 ------------------------------------------------------------------------
+r36 | trevor | 2009-01-09 08:43:18 -0800 (Fri, 09 Jan 2009) | 1 line
+
+Updating changes and manifiest
+------------------------------------------------------------------------
 r35 | trevor | 2009-01-09 08:42:20 -0800 (Fri, 09 Jan 2009) | 1 line
 
 Adding file-name inclusion during merge
+------------------------------------------------------------------------
+r34 | trevor | 2008-12-30 20:46:07 -0800 (Tue, 30 Dec 2008) | 1 line
+
+Updating changes and manifest
 ------------------------------------------------------------------------
 r33 | trevor | 2008-12-30 20:45:30 -0800 (Tue, 30 Dec 2008) | 1 line
 
 Bug fixes and addition of document_root attribute
 ------------------------------------------------------------------------
+r32 | trevor | 2008-12-30 12:50:41 -0800 (Tue, 30 Dec 2008) | 1 line
+
+Updating MANIFEST and Changes for CPAN release
+------------------------------------------------------------------------
 r31 | trevor | 2008-12-30 12:48:19 -0800 (Tue, 30 Dec 2008) | 1 line
 
 Adding file_separator attribute to change the file separator protocol
 ------------------------------------------------------------------------
+r30 | trevor | 2008-12-29 08:19:20 -0800 (Mon, 29 Dec 2008) | 1 line
+
+Updating changes and manifest for CPAN release
+------------------------------------------------------------------------
 r29 | trevor | 2008-12-29 08:17:29 -0800 (Mon, 29 Dec 2008) | 1 line
 
 Adding new mp2 specific tests and POD regarding failing tests
+------------------------------------------------------------------------
+r28 | trevor | 2008-12-23 09:07:09 -0800 (Tue, 23 Dec 2008) | 1 line
+
+Updating anscilary CPAN files
 ------------------------------------------------------------------------
 r27 | trevor | 2008-12-23 09:03:27 -0800 (Tue, 23 Dec 2008) | 1 line
 
@@ -46,6 +114,10 @@ Further unit test structure and cross-platform compatibility
 r22 | trevor | 2008-12-23 07:54:10 -0800 (Tue, 23 Dec 2008) | 1 line
 
 More compatibility across mod_perl/Perl versions
+------------------------------------------------------------------------
+r21 | trevor | 2008-12-22 23:07:08 -0800 (Mon, 22 Dec 2008) | 1 line
+
+Updated changes file
 ------------------------------------------------------------------------
 r20 | trevor | 2008-12-22 23:06:02 -0800 (Mon, 22 Dec 2008) | 1 line
 

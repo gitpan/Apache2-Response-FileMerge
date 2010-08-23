@@ -14,6 +14,7 @@ t/07-stats.t
 t/08-js_minimize.t
 t/09-css_minimize.t
 t/10-cache.t
+t/114-variable_substitution.t
 t/12-mp2.t
 t/13-file_separator.t
 t/14-document_root.t
@@ -37,5 +38,9 @@ t/htdocs/minimize/minimize.js
 t/htdocs/sep/foo/bar.js
 t/htdocs/sep/foo.js
 t/htdocs/stats/stats.js
+t/htdocs/varsub/bar/baz.js
+t/htdocs/varsub/foo/baz.js
+t/htdocs/varsub/varsub-do.js
+t/htdocs/varsub/varsub.js
 t/htdocs/verify.js
 t/TEST
