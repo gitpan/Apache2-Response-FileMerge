@@ -329,13 +329,14 @@ __END__
 
 =head1 NAME
 
-Apache2::Response::FileMerge - Merge and include static client-side style and code 
+Apache2::Response::FileMerge - Easily merge JavaScript and CSS into a single file dynamically. 
 
 =head1 SYNOPSIS
 
 L<Apache2::Response::FileMerge> gives you the ability to merge, include, minimize
-and compress multiple js/css fles of a single type into a single file to place anywhere
-into an HTTP document, all encapsulated into a single mod_perl Response handler.
+and compress multiple JavaScript and CSS files into a single file (respective of type)
+to place anywhere into an HTML document.  All handled by an easy to configure mod_perl
+Response handler with absolutely no alteration needed for existing JavaScript or CSS.
 
 =head1 DESCRIPTION
 
